@@ -2,64 +2,29 @@ language: bash
 services: docker
 
 env:
-  - VERSION=7.4 VARIANT=buster/cli
-  - VERSION=7.4 VARIANT=buster/apache
-  - VERSION=7.4 VARIANT=buster/fpm
-  - VERSION=7.4 VARIANT=buster/zts
-  - VERSION=7.4 VARIANT=alpine3.11/cli
-  - VERSION=7.4 VARIANT=alpine3.11/fpm
-  - VERSION=7.4 VARIANT=alpine3.11/zts
-  - VERSION=7.4 VARIANT=alpine3.10/cli
-  - VERSION=7.4 VARIANT=alpine3.10/fpm
-  - VERSION=7.4 VARIANT=alpine3.10/zts
-  - VERSION=7.3 VARIANT=buster/cli
-  - VERSION=7.3 VARIANT=buster/apache
-  - VERSION=7.3 VARIANT=buster/fpm
-  - VERSION=7.3 VARIANT=buster/zts
-  - VERSION=7.3 VARIANT=stretch/cli
-  - VERSION=7.3 VARIANT=stretch/apache
-  - VERSION=7.3 VARIANT=stretch/fpm
-  - VERSION=7.3 VARIANT=stretch/zts
-  - VERSION=7.3 VARIANT=alpine3.11/cli
-  - VERSION=7.3 VARIANT=alpine3.11/fpm
-  - VERSION=7.3 VARIANT=alpine3.11/zts
-  - VERSION=7.3 VARIANT=alpine3.10/cli
-  - VERSION=7.3 VARIANT=alpine3.10/fpm
-  - VERSION=7.3 VARIANT=alpine3.10/zts
-  - VERSION=7.2 VARIANT=buster/cli
-  - VERSION=7.2 VARIANT=buster/apache
-  - VERSION=7.2 VARIANT=buster/fpm
-  - VERSION=7.2 VARIANT=buster/zts
-  - VERSION=7.2 VARIANT=stretch/cli
-  - VERSION=7.2 VARIANT=stretch/apache
-  - VERSION=7.2 VARIANT=stretch/fpm
-  - VERSION=7.2 VARIANT=stretch/zts
-  - VERSION=7.2 VARIANT=alpine3.11/cli
-  - VERSION=7.2 VARIANT=alpine3.11/fpm
-  - VERSION=7.2 VARIANT=alpine3.11/zts
-  - VERSION=7.2 VARIANT=alpine3.10/cli
-  - VERSION=7.2 VARIANT=alpine3.10/fpm
-  - VERSION=7.2 VARIANT=alpine3.10/zts
-
-install:
-  - git clone https://github.com/docker-library/official-images.git ~/official-images
-
-before_script:
-  - env | sort
-  - wget -qO- 'https://github.com/tianon/pgp-happy-eyeballs/raw/master/hack-my-builds.sh' | bash
-  - cd "$VERSION/$VARIANT"
-  - slash='/'; image="php:${VERSION}-${VARIANT//$slash/-}"
+  global:
+  - BASE_IMAGE_STABILITY_TAG=2.4.1
+  - PHP74=7.4.1
+  - PHP73=7.3.13
+  - PHP72=7.2.26
+  matrix:
+  - PHP_VER="${PHP74}" ALPINE_VER=3.10 TAGS="${PHP_VER},7.4,7,latest"
+  - PHP_VER="${PHP73}" ALPINE_VER=3.10 TAGS="${PHP_VER},7.3"
+  - PHP_VER="${PHP72}" ALPINE_VER=3.10 TAGS="${PHP_VER},7.2"
+  - PHP_VER="${PHP74}" ALPINE_VER=3.10 PHP_DEBUG=1 TAGS="${PHP_VER}-debug,7.4-debug,7-debug"
+  - PHP_VER="${PHP73}" ALPINE_VER=3.10 PHP_DEBUG=1 TAGS="${PHP_VER}-debug,7.3-debug"
+  - PHP_VER="${PHP72}" ALPINE_VER=3.10 PHP_DEBUG=1 TAGS="${PHP_VER}-debug,7.2-debug"
 
 script:
-  - |
-    (
-      set -Eeuo pipefail
-      set -x
-      docker build -t "$image" .
-      ~/official-images/test/run.sh "$image"
-    )
+- cd "${PHP_VER:0:3}/alpine${ALPINE_VER}/fpm"
+- travis_retry make
 
-after_script:
-  - docker images
+after_success:
+- . "${TRAVIS_BUILD_DIR}/release.sh"
 
-# vim:set et ts=2 sw=2:
+notifications:
+  email:
+    recipients:
+    - travisci@wodby.com
+    on_success: never
+    on_failure: always
