@@ -1,36 +1,26 @@
-# About this Repo
+# https://github.com/docker-library/php
 
-[![Build Status](https://travis-ci.org/wodby/base-php.svg?branch=master)](https://travis-ci.org/wodby/base-php)
-[![Docker Pulls](https://img.shields.io/docker/pulls/wodby/base-php.svg)](https://hub.docker.com/r/wodby/base-php)
-[![Docker Stars](https://img.shields.io/docker/stars/wodby/base-php.svg)](https://hub.docker.com/r/wodby/base-php)
-[![Docker Layers](https://images.microbadger.com/badges/image/wodby/base-php.svg)](https://microbadger.com/images/wodby/base-php)
+## Maintained by: [the Docker Community](https://github.com/docker-library/php)
 
-This repository is a fork of https://github.com/docker-library/php with a few changes:
+This is the Git repo of the [Docker "Official Image"](https://github.com/docker-library/official-images#what-are-official-images) for [`php`](https://hub.docker.com/_/php/) (not to be confused with any official `php` image provided by `php` upstream). See [the Docker Hub page](https://hub.docker.com/_/php/) for the full readme on how to use this Docker image and for information regarding contributing and issues.
 
-* Base image set to [wodby/alpine](https://github.com/wodby/alpine) with stability tags
-* We build only Alpine-based FPM variants
-* Additional debug variants of images with `--enable-debug` and non-stripped bins
+The [full image description on Docker Hub](https://hub.docker.com/_/php/) is generated/maintained over in [the docker-library/docs repository](https://github.com/docker-library/docs), specifically in [the `php` directory](https://github.com/docker-library/docs/tree/master/php).
 
-## Docker Images
+## See a change merged here that doesn't show up on Docker Hub yet?
 
-* All images are based on Alpine Linux
-* Base image: [wodby/alpine](https://github.com/wodby/alpine)
-* [Travis CI builds](https://travis-ci.org/wodby/base-php) 
-* [Docker Hub](https://hub.docker.com/r/wodby/base-php)
+For more information about the full official images change lifecycle, see [the "An image's source changed in Git, now what?" FAQ entry](https://github.com/docker-library/faq#an-images-source-changed-in-git-now-what).
 
-Supported tags and respective `Dockerfile` links
+For outstanding `php` image PRs, check [PRs with the "library/php" label on the official-images repository](https://github.com/docker-library/official-images/labels/library%2Fphp). For the current "source of truth" for [`php`](https://hub.docker.com/_/php/), see [the `library/php` file in the official-images repository](https://github.com/docker-library/official-images/blob/master/library/php).
 
-* `7.3.3`, `7.3`, `7`, `latest` [_(7.3/alpine3.9/fpm/Dockerfile.wodby)_]
-* `7.2.16`, `7.2` [_(7.2/alpine3.9/fpm/Dockerfile.wodby)_]
-* `7.1.27`, `7.1` [_(7.1/alpine3.9/fpm/Dockerfile.wodby)_]
-* `7.3.3-debug`, `7.3-debug`, `7-debug` [_(7.3/alpine3.9/fpm/Dockerfile.wodby)_]
-* `7.2.16-debug`, `7.2-debug`, `7-debug` [_(7.2/alpine3.9/fpm/Dockerfile.wodby)_]
-* `7.1.27-debug`, `7.1-debug` [_(7.1/alpine3.9/fpm/Dockerfile.wodby)_]
+---
 
-## Configurable image with pre-compiled extensions
+-	[![build status badge](https://img.shields.io/travis/docker-library/php/master.svg?label=Travis%20CI)](https://travis-ci.org/docker-library/php/branches)
+-	[![build status badge](https://img.shields.io/jenkins/s/https/doi-janky.infosiftr.net/job/update.sh/job/php.svg?label=Automated%20update.sh)](https://doi-janky.infosiftr.net/job/update.sh/job/php)
 
-For actual development and production usage see descendant image [wodby/php](https://github.com/wodby/php)
+| Build | Status | Badges | (per-arch) |
+|:-:|:-:|:-:|:-:|
+| [![amd64 build status badge](https://img.shields.io/jenkins/s/https/doi-janky.infosiftr.net/job/multiarch/job/amd64/job/php.svg?label=amd64)](https://doi-janky.infosiftr.net/job/multiarch/job/amd64/job/php) | [![arm32v5 build status badge](https://img.shields.io/jenkins/s/https/doi-janky.infosiftr.net/job/multiarch/job/arm32v5/job/php.svg?label=arm32v5)](https://doi-janky.infosiftr.net/job/multiarch/job/arm32v5/job/php) | [![arm32v6 build status badge](https://img.shields.io/jenkins/s/https/doi-janky.infosiftr.net/job/multiarch/job/arm32v6/job/php.svg?label=arm32v6)](https://doi-janky.infosiftr.net/job/multiarch/job/arm32v6/job/php) | [![arm32v7 build status badge](https://img.shields.io/jenkins/s/https/doi-janky.infosiftr.net/job/multiarch/job/arm32v7/job/php.svg?label=arm32v7)](https://doi-janky.infosiftr.net/job/multiarch/job/arm32v7/job/php) |
+| [![arm64v8 build status badge](https://img.shields.io/jenkins/s/https/doi-janky.infosiftr.net/job/multiarch/job/arm64v8/job/php.svg?label=arm64v8)](https://doi-janky.infosiftr.net/job/multiarch/job/arm64v8/job/php) | [![i386 build status badge](https://img.shields.io/jenkins/s/https/doi-janky.infosiftr.net/job/multiarch/job/i386/job/php.svg?label=i386)](https://doi-janky.infosiftr.net/job/multiarch/job/i386/job/php) | [![ppc64le build status badge](https://img.shields.io/jenkins/s/https/doi-janky.infosiftr.net/job/multiarch/job/ppc64le/job/php.svg?label=ppc64le)](https://doi-janky.infosiftr.net/job/multiarch/job/ppc64le/job/php) | [![s390x build status badge](https://img.shields.io/jenkins/s/https/doi-janky.infosiftr.net/job/multiarch/job/s390x/job/php.svg?label=s390x)](https://doi-janky.infosiftr.net/job/multiarch/job/s390x/job/php) |
+| [![put-shared build status badge](https://img.shields.io/jenkins/s/https/doi-janky.infosiftr.net/job/put-shared/job/heavy.svg?label=put-shared)](https://doi-janky.infosiftr.net/job/put-shared/job/heavy) |
 
-[_(7.3/alpine3.9/fpm/Dockerfile.wodby)_]: https://github.com/wodby/base-php/tree/master/7.3/alpine3.9/fpm/Dockerfile.wodby
-[_(7.2/alpine3.9/fpm/Dockerfile.wodby)_]: https://github.com/wodby/base-php/tree/master/7.2/alpine3.9/fpm/Dockerfile.wodby
-[_(7.1/alpine3.9/fpm/Dockerfile.wodby)_]: https://github.com/wodby/base-php/tree/master/7.1/alpine3.9/fpm/Dockerfile.wodby
+<!-- THIS FILE IS GENERATED BY https://github.com/docker-library/docs/blob/master/generate-repo-stub-readme.sh -->

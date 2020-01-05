@@ -29,12 +29,15 @@ ENV PHPIZE_DEPS \
 		re2c
 
 # persistent / runtime deps
-RUN apt-get update && apt-get install -y \
+RUN set -eux; \
+	apt-get update; \
+	apt-get install -y --no-install-recommends \
 		$PHPIZE_DEPS \
 		ca-certificates \
 		curl \
 		xz-utils \
-	--no-install-recommends && rm -r /var/lib/apt/lists/*
+	; \
+	rm -rf /var/lib/apt/lists/*
 
 ENV PHP_INI_DIR /usr/local/etc/php
 RUN set -eux; \
@@ -55,35 +58,28 @@ ENV PHP_EXTRA_CONFIGURE_ARGS --enable-maintainer-zts --disable-cgi
 # Enable linker optimization (this sorts the hash buckets to improve cache locality, and is non-default)
 # Adds GNU HASH segments to generated executables (this is used if present, and is much faster than sysv hash; in this configuration, sysv hash is also generated)
 # https://github.com/docker-library/php/issues/272
-ENV PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2"
+# -D_LARGEFILE_SOURCE and -D_FILE_OFFSET_BITS=64 (https://www.php.net/manual/en/intro.filesystem.php)
+ENV PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
 ENV PHP_CPPFLAGS="$PHP_CFLAGS"
 ENV PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
 
 ENV GPG_KEYS CBAF69F173A0FEA4B537F470D66C9593118BCCB6 F38252826ACD957EF380D39F2F7956BC5DA04B5D
 
-ENV PHP_VERSION 7.3.3
-ENV PHP_URL="https://secure.php.net/get/php-7.3.3.tar.xz/from/this/mirror" PHP_ASC_URL="https://secure.php.net/get/php-7.3.3.tar.xz.asc/from/this/mirror"
-ENV PHP_SHA256="6bb03e79a183d0cb059a6d117bbb2e0679cab667fb713a13c6a16f56bebab9b3" PHP_MD5=""
+ENV PHP_VERSION 7.3.13
+ENV PHP_URL="https://www.php.net/get/php-7.3.13.tar.xz/from/this/mirror" PHP_ASC_URL="https://www.php.net/get/php-7.3.13.tar.xz.asc/from/this/mirror"
+ENV PHP_SHA256="57ac55fe442d2da650abeb9e6fa161bd3a98ba6528c029f076f8bba43dd5c228" PHP_MD5=""
 
-RUN set -xe; \
+RUN set -eux; \
 	\
-	fetchDeps=' \
-		wget \
-	'; \
-	if ! command -v gpg > /dev/null; then \
-		fetchDeps="$fetchDeps \
-			dirmngr \
-			gnupg \
-		"; \
-	fi; \
+	savedAptMark="$(apt-mark showmanual)"; \
 	apt-get update; \
-	apt-get install -y --no-install-recommends $fetchDeps; \
+	apt-get install -y --no-install-recommends gnupg dirmngr; \
 	rm -rf /var/lib/apt/lists/*; \
 	\
 	mkdir -p /usr/src; \
 	cd /usr/src; \
 	\
-	wget -O php.tar.xz "$PHP_URL"; \
+	curl -fsSL -o php.tar.xz "$PHP_URL"; \
 	\
 	if [ -n "$PHP_SHA256" ]; then \
 		echo "$PHP_SHA256 *php.tar.xz" | sha256sum -c -; \
@@ -93,35 +89,26 @@ RUN set -xe; \
 	fi; \
 	\
 	if [ -n "$PHP_ASC_URL" ]; then \
-		wget -O php.tar.xz.asc "$PHP_ASC_URL"; \
+		curl -fsSL -o php.tar.xz.asc "$PHP_ASC_URL"; \
 		export GNUPGHOME="$(mktemp -d)"; \
 		for key in $GPG_KEYS; do \
 			gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
 		done; \
 		gpg --batch --verify php.tar.xz.asc php.tar.xz; \
-		command -v gpgconf > /dev/null && gpgconf --kill all; \
+		gpgconf --kill all; \
 		rm -rf "$GNUPGHOME"; \
 	fi; \
 	\
-	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $fetchDeps
+	apt-mark auto '.*' > /dev/null; \
+	apt-mark manual $savedAptMark > /dev/null; \
+	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
 
 COPY docker-php-source /usr/local/bin/
 
 RUN set -eux; \
 	\
 	savedAptMark="$(apt-mark showmanual)"; \
-	apt-get update; \
-	apt-get install -y --no-install-recommends \
-		libcurl4-openssl-dev \
-		libedit-dev \
-		libsodium-dev \
-		libsqlite3-dev \
-		libssl-dev \
-		libxml2-dev \
-		zlib1g-dev \
-		${PHP_EXTRA_BUILD_DEPS:-} \
-	; \
-##<argon2>##
+##<argon2-stretch>##
 	sed -e 's/stretch/buster/g' /etc/apt/sources.list > /etc/apt/sources.list.d/buster.list; \
 	{ \
 		echo 'Package: *'; \
@@ -132,9 +119,19 @@ RUN set -eux; \
 		echo 'Pin: release n=buster'; \
 		echo 'Pin-Priority: 990'; \
 	} > /etc/apt/preferences.d/argon2-buster; \
+##</argon2-stretch>##
 	apt-get update; \
-	apt-get install -y --no-install-recommends libargon2-dev; \
-##</argon2>##
+	apt-get install -y --no-install-recommends \
+		libargon2-dev \
+		libcurl4-openssl-dev \
+		libedit-dev \
+		libsodium-dev \
+		libsqlite3-dev \
+		libssl-dev \
+		libxml2-dev \
+		zlib1g-dev \
+		${PHP_EXTRA_BUILD_DEPS:-} \
+	; \
 	rm -rf /var/lib/apt/lists/*; \
 	\
 	export \
@@ -171,6 +168,9 @@ RUN set -eux; \
 		--with-password-argon2 \
 # https://wiki.php.net/rfc/libsodium
 		--with-sodium=shared \
+# always build against system sqlite3 (https://github.com/php/php-src/commit/6083a387a81dbbd66d6316a3a12a63f06d5f7109)
+		--with-pdo-sqlite=/usr \
+		--with-sqlite3=/usr \
 		\
 		--with-curl \
 		--with-libedit \
@@ -209,11 +209,11 @@ RUN set -eux; \
 	; \
 	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
 	\
-	php --version; \
-	\
-# https://github.com/docker-library/php/issues/443
+# update pecl channel definitions https://github.com/docker-library/php/issues/443
 	pecl update-channels; \
-	rm -rf /tmp/pear ~/.pearrc
+	rm -rf /tmp/pear ~/.pearrc; \
+# smoke test
+	php --version
 
 COPY docker-php-ext-* docker-php-entrypoint /usr/local/bin/
 
